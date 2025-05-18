@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock title %}
+{% block body %}
+{% if user.is_authenticated %}
+  <div class="container-fluid tm-content-container">
+    <ul class="cd-hero-slider mb-0 py-5">
+      <li class="px-3" data-page-no="1">
+        <div class="page-width-1 page-left">
+          <div class="position-relative tm-border-top tm-border-bottom intro-container">
+            <div class="intro-left tm-bg-dark">
+              <h2 class="mb-4">Malicious URL Prediction</h2>
+              <div class="row">
+                <form action="" method="POST" class="contact-form">
+                  {% csrf_token %}
+                  <div class="input-group tm-mb-30">
+                    <input name="url" type="text" value="{{ url }}" class="form-control rounded-0 border-top-0 border-end-0 border-start-0"
+                      placeholder="Enter URL" required>
+                  </div>
+                  {% if result %}
+                    {% if result == 'Benign' %}
+                    <h3 class="blinking-text text-success">Safe URL Detected!</h3>
+                    {% else %}
+                    <h3 class="blinking-text text-danger">{{ result }} URL Detected.</h3>
+                    {% endif %}
+                  {% endif %}
+                  <div class="input-group justify-content-end">
+                    <button type="submit" class="btn btn-primary tm-btn-pad-2">Submit</button>
+                  </div>
+                </form>
+              </div>
+              {% if result %}
+              <!-- URL Feature Analysis Table -->
+              <h3 class="mt-4">Feature Analysis</h3>
+              <table class="table table-bordered text-white scrollable-table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>Count</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for feature, details in analysis.items %}
+                  <tr>
+                    <td>{{ feature }}</td>
+                    <td>{{ details.count }}</td>
+                    <td class="{% if details.status == 'Harmful' %}text-danger{% else %}text-success{% endif %}">
+                      {{ details.status }}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+
+              <!-- Technology Information Table -->
+              <h3 class="mt-4">Technology Information</h3>
+              <table class="table table-bordered table-dark">
+                <thead>
+                  <tr>
+                    <th>Component</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for key, value in tech_info.items %}
+                  <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+
+              <!-- Vulnerabilities Table -->
+              <h3 class="mt-4">Vulnerability Analysis</h3>
+              <table class="table table-bordered table-dark">
+                <thead>
+                  <tr>
+                    <th>Component</th>
+                    <th>Vulnerability Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for key, value in vulnerability.items %}
+                  <tr>
+                    <td>{{ key }}</td>
+                    <td>{{ value }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+
+              <!-- Open Directories Table -->
+              <h3 class="mt-4">Open Directories</h3>
+              <table class="table table-bordered table-dark">
+                <thead>
+                  <tr>
+                    <th>Directory</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if open_urls == "No open directories found" %}
+                  <tr>
+                    <td class="text-success">{{ open_urls }}</td>
+                  </tr>
+                  {% else %}
+                  {% for url in open_urls %}
+                  <tr>
+                    <td>{{ url }}</td>
+                  </tr>
+                  {% endfor %}
+                  {% endif %}
+                </tbody>
+              </table>
+              <button id="downloadReport" class="btn btn-success mt-3">
+                <i class="fa fa-download"></i> Download Report
+              </button>
+              {% endif %}
+            </div>
+          </div>
+      </li>
+    </ul>
+  </div>
+{% endif %}
+
+{% endblock body %}
