@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malicious URL Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %} ">
+    <link rel="stylesheet" href="{% static "css/slick.css" %} " type="text/css" /> 
+    <link rel="stylesheet" href="{% static "css/templatemo-style.css" %} ">
+</head>
+
+<body>
+  <video autoplay muted loop id="bg-video">
+      <source src="{% static "video/3129595-uhd_3840_2160_30fps.mp4" %} " type="video/mp4">
+  </video>
+  <div class="page-container">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="cd-slider-nav">
+            <nav class="navbar navbar-expand-lg" id="tm-nav">
+              <a class="navbar-brand" href="/">Malicious <br>URL Prediction</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-supported-content" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                  <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbar-supported-content">
+                  <ul class="navbar-nav mb-2 mb-lg-0">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                      <a class="nav-link" aria-current="page" href="{% url "log_out" %}" data-no="1">Logout</a>
+                      <div class="circle"></div>
+                    </li>
+                    {% else %}
+                    <li class="nav-item {% if page == 'home' %}selected{% endif %} ">
+                      <a class="nav-link" aria-current="page" href="/" data-no="1">Home</a>
+                      <div class="circle"></div>
+                    </li>
+                    <li class="nav-item {% if page == 'log_in' %}selected{% endif %}">
+                      <a class="nav-link" href="{% url "log_in" %}" data-no="2">Login</a>
+                      <div class="circle"></div>
+                    </li>
+                    <li class="nav-item {% if page == 'register' %}selected{% endif %}">
+                      <a class="nav-link" href="{% url "register" %}" data-no="3">Register</a>
+                      <div class="circle"></div>
+                    </li>
+                    {% endif %}
+                  </ul>
+                </div>
+            </nav>
+          </div>
+        </div>          
+      </div>        
+    </div>     
+    {% for message in messages %} 
+      <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+      {% if message.tags == 'success' %}
+      <script>
+        var m = "{{ message }}"
+        swal("Success !", m , 'success')
+      </script>
+      {% elif message.tags == 'danger' %}
+      <script>
+        var m = "{{ message }}"
+        swal("Error !", m , 'error')
+      </script>
+      {% elif message.tags == 'info' %}
+      <script>
+        var m = "{{ message }}"
+        swal("Alert !", m , 'info')
+      </script>
+      {% endif %}
+
+    {% endfor %}
+
+    {% block body %}
+    
+    {% endblock body %}
+    
+    
+    <script src="{% static "js/jquery-3.5.1.min.js" %} "></script>
+    <script src="{% static "js/bootstrap.min.js" %} "></script>
+    <script src="{% static "js/slick.js" %} "></script>
+    <script src="{% static "js/templatemo-script.js" %} "></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+      document.getElementById("downloadReport").addEventListener("click", function () {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+    
+        // Report Title
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.text("Malicious URL Report", 105, 15, null, null, "center");
+    
+        // URL and Prediction
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(12);
+        doc.text("URL: {{ url }}", 10, 30);
+        doc.text("Prediction: {{ result }}", 10, 40);
+    
+        // Feature Safety Analysis Table
+        let startY = 50;
+        doc.setFont("helvetica", "bold");
+        doc.text("Feature Safety Analysis", 10, startY);
+        doc.line(10, startY + 2, 200, startY + 2);
+    
+        let y = startY + 10;
+        doc.setFont("helvetica", "normal");
+        doc.text("Feature", 10, y);
+        doc.text("Count", 90, y);
+        doc.text("Status", 140, y);
+        doc.line(10, y + 2, 200, y + 2);
+    
+        y += 10;
+        {% for feature, details in analysis.items %}
+          doc.text("{{ feature }}", 10, y);
+          doc.text("{{ details.count }}", 90, y);
+          doc.text("{{ details.status }}", 140, y);
+          y += 8;
+          // If content reaches the bottom of the page, add a new page
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
+        {% endfor %}
+    
+        // Start a new page for additional information
+        doc.addPage();
+        y = 20;
+    
+        // Technology Information
+        doc.setFont("helvetica", "bold");
+        doc.text("Technology Information", 10, y);
+        doc.line(10, y + 2, 200, y + 2);
+        y += 10;
+        doc.setFont("helvetica", "normal");
+        {% for key, value in tech_info.items %}
+          doc.text("{{ key }}: {{ value }}", 10, y);
+          y += 8;
+        {% endfor %}
+    
+        y += 10; // Space before next section
+    
+        // Vulnerability Analysis
+        doc.setFont("helvetica", "bold");
+        doc.text("Vulnerability Analysis", 10, y);
+        doc.line(10, y + 2, 200, y + 2);
+        y += 10;
+        doc.setFont("helvetica", "normal");
+        {% for key, value in vulnerability.items %}
+          doc.text("{{ key }}: {{ value }}", 10, y);
+          y += 8;
+        {% endfor %}
+    
+        y += 10; // Space before next section
+    
+        // Open Directories
+        doc.setFont("helvetica", "bold");
+        doc.text("Open Directories", 10, y);
+        doc.line(10, y + 2, 200, y + 2);
+        y += 10;
+        doc.setFont("helvetica", "normal");
+        doc.text("{{ open_urls }}", 10, y);
+    
+        // Save PDF
+        doc.save("Malicious_URL_Report.pdf");
+      });
+    </script>
+</body>
+
+</html>

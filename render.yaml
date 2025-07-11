@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: malicious-url-app
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn malicious_url.wsgi
+    autoDeploy: true
